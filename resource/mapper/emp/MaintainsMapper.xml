@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.emp.MaintainsDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(mid) from maintain 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectMaintains" resultType="map" parameterType="map">
+		select mid,breakdownnumber, maintenancetime,completiontime,sum from maintain
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by mid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<!-- 添加数据 -->
+	<insert id="addMaintains" parameterType="com.aaa.entity.emp.Maintain">
+		insert into maintain(breakdownnumber,maintenancetime,completiontime,materialcost,staffcosts,othercosts,sum,mrepairman,remark) values (#{breakdownnumber},#{maintenancetime},#{completiontime},#{materialcost},#{staffcosts},#{othercosts},#{sum},#{mrepairman},#{remark})
+	</insert>
+	
+	<!-- 便利故障订单下拉框 -->
+	<select id="selecteMaintains" resultType="com.aaa.entity.emp.Maintain">
+		select breakdownnumber from breakdowns where failurestate='1'
+	</select>
+	<!-- 修该维修状态 -->
+	<update id="updateMaintains" parameterType="com.aaa.entity.emp.Maintain">
+		update breakdowns set failurestate='0' where breakdownnumber=#{breakdownnumber}
+	</update>
+	<!-- 查询详情 -->
+	<select id="selectmaintainsMap" resultType="map" parameterType="int">
+		select mid,breakdownnumber,maintenancetime,completiontime,materialcost,staffcosts,othercosts,sum,mrepairman,remark from maintain where mid=#{mid}
+	</select>
+	<!-- 添加财务 -->
+	<insert id="addAppropriation" parameterType="com.aaa.entity.emp.Maintain">
+		insert into appropriation(maschinennummer,sumo,genre,auditor) values (#{breakdownnumber},#{sum},'2',#{mrepairman})
+	</insert>
+</mapper>

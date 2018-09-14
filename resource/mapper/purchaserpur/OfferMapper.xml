@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.purchase.OffDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(company) from offer 
+		<where>
+			<if test="(company!=null and company!='') and (goodsname!=null and goodsname!='')">
+				${goodsname} like concat('%',concat(#{company},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectOff" resultType="map" parameterType="map">
+		select id,goodstype,goodsname,company,price,plantime,day from offer  
+			<where>
+				<if test="(company!=null and company!='') and (goodsname!=null and goodsname!='')">
+					${goodsname} like concat('%',concat(#{company},'%'))
+				</if>
+			</where>
+		order by id desc
+			limit #{begin},#{end}
+	</select>
+	<insert id="addOff" parameterType="com.aaa.entity.purchase.Offer">
+		insert into offer(goodsname,goodstype,company,price,plantime,day) values(#{goodsname},#{goodstype},#{company},#{price},#{plantime},#{day})
+	</insert>
+	<select id="selectOffbiao" parameterType="com.aaa.entity.purchase.Offer" resultType="com.aaa.entity.purchase.Offer">
+		select id,goodstype,goodsname,company,price,plantime,day from offer where id=#{id}
+	</select>
+	<update id="updateOff" parameterType="com.aaa.entity.purchase.Offer">
+		update offer set goodsname=#{goodsname},goodstype=#{goodstype},company=#{company},price=#{price},plantime=#{plantime},day=#{day} where id=#{id}
+	</update>
+	<delete id="deleteOff" parameterType="com.aaa.entity.purchase.Offer">
+		delete from offer where id=#{id}
+	</delete>
+</mapper>

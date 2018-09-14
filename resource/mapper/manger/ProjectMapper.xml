@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.manger.ProjectDao">
+  	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(pid) from plan 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectproject" resultType="map" parameterType="map">
+		select p.pid,p.pnumber,p.dnumber,p.person,p.ptime,p.pnum,p.pchang,p.pbegin,p.pend,s.states,p.pyi,p.pzhi from plan p left join state s on s.id=p.pzh
+		 
+		
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by p.pid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<!-- 审核表返回值 -->
+	<select id="selectPlan" resultType="com.aaa.entity.manger.Plan" parameterType="com.aaa.entity.manger.Plan">
+		select pid,pzh,pyi from plan where pid = #{pid}
+	</select>
+	
+	<!-- 审核同意 -->
+	<update id="updatePlan" parameterType="com.aaa.entity.manger.Plan">
+		update plan set pzh='2',pyi=#{pyi} where pid=#{pid}
+	</update>
+	
+	<!-- 审核不同意 -->
+	<update id="noupdatePlan" parameterType="com.aaa.entity.manger.Plan">
+		update plan set pzh='1',pyi=#{pyi} where pid=#{pid}
+	</update>
+	<select id="select" resultType="com.aaa.entity.manger.Plan" parameterType="com.aaa.entity.manger.Plan">
+		select pid,pnumber,dnumber from plan where pid=#{pid}
+	</select>
+	<insert id="insert" parameterType="com.aaa.entity.manger.Plan">
+		insert into material(mnumber,pnumber)values(#{dnumber},#{pnumber})
+	</insert>
+  </mapper>

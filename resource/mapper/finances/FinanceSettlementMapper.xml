@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.finance.FinanceSettlementDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+			select count(id) from orderinfo
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					 and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		</select>
+		<select id="selectPur" resultType="map" parameterType="map">
+			select m.* from (select o.id,o.orderno,o.ordertime,o.mtotal,o.statess,s.states,o.dpval  from orderinfo o LEFT JOIN state s on s.id=o.paytype) m
+				<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		  			order by m.id desc 
+					limit #{begin},#{end}
+	</select>
+	<!-- 结算查询 -->
+	<select id="selectOrderReturnOne" resultType="com.aaa.entity.sell.OrderInfo" parameterType="com.aaa.entity.sell.OrderInfo">
+		select id,orderno,ordertime,mtotal,paytype from orderinfo where id=#{id}
+	</select>
+	<insert id="insert" parameterType="com.aaa.entity.sell.OrderInfo">
+		insert into income(IncomeNum,IncomeMoney,IncomeDate,type) values
+		(#{orderno},#{mtotal},#{ordertime},#{paytype})
+	</insert>
+	<update id="updateTwo" parameterType="com.aaa.entity.sell.OrderInfo">
+		update orderinfo set paytype=27 where id=#{id}
+	</update>
+</mapper>

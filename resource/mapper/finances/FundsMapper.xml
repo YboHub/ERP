@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.finance.FundsDao">
+		
+<!--采购拨款管理查询获取分页总行数-->
+	<select id="findCountByMap" parameterType="map" resultType="int">
+		select count(r.orderid) from purchase_record r
+		<where> r.states=2
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and ${name} = #{value}
+			</if>
+		</where>
+	</select>
+		
+<!-- 采购拨款管理查询列表信息 -->
+	<select id="selectFundsMap" resultType="map" parameterType="map">
+		select p.orderid,p.types,sum(p.money) allmoney,r.caozuoname,s.states from purorder p 
+				left join purchase_record r on p.orderid=r.orderid
+				left join state s on r.states=s.id   
+		<where> r.states=2
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>  
+				group by p.orderid 
+				order by r.sid desc  limit #{begin},#{end}
+	</select>
+	
+<!-- 尾款结算查询获取分页总行数 -->	
+	<select id="findCount1ByMap" parameterType="map" resultType="map">
+		select o.orderno,c.cname,o.ordertime,s.states from orderinfo o
+				left join client c on o.cno=c.cno 
+				left join state s  on s.id = o.paytype
+		<where> 1=1
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and ${name} = #{value}
+			</if>
+		</where>
+				and o.paytype in (27,28)
+	</select>
+	
+<!-- 尾款结算查询列表信息 -->		
+	<select id="selectFinalMap" resultType="map" parameterType="map">
+		select o.orderno,c.cname,o.ordertime,s.states from orderinfo o
+				left join client c on o.cno=c.cno 
+				left join state s  on s.id = o.paytype
+		<where> 1=1 
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		<!-- 根据时间段查询 -->
+			<if test="beginTime!=null and beginTime!=''">
+					<![CDATA[   and DATE_FORMAT(ordertime, '%Y-%m-%d')>=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d')   ]]>
+			</if>
+			<if test="endTime!=null and endTime!=''">
+					<![CDATA[  and DATE_FORMAT(ordertime, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')    ]]>
+					<!-- ldate数据库里的字段 -->
+			</if>
+		</where>
+				and o.paytype in (27,28)
+				order by o.ordertime desc
+	</select>	
+	
+<!-- 修改拨款状态 -->		
+	<update id="toUpdate" parameterType="com.aaa.entity.apauditor.PurchaseRecord">
+			update purchase_record set states=15 where orderid=#{orderid}
+	</update>
+
+	<update id="toUpdateMoney" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states=15 where orderid=#{orderid}
+	</update>
+
+	<insert id="insertPur" parameterType="com.aaa.entity.purchase.PurOrder">
+			insert into disburse(DisNum,DisMoney,DisDate) values(#{orderid},#{allmoney},#{time})
+	</insert>
+	<insert id="insertFundsRecord" parameterType="com.aaa.entity.apauditor.FundsRecord">
+		insert into fundsrecord(orderid,allmoney,fundsname,paymethod,payee,states,bankcard,reason) values(#{orderid},#{allmoney},#{fundsname},#{paymethod},#{payee},15,#{bankcard},#{reason})
+	</insert>
+<!-- 采购拨款记录分页获取总行数 -->
+	<select id="findCountByMapFundsRecord" parameterType="map" resultType="int">
+  		select count(id) from fundsrecord
+  		<where>
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	
+<!-- 采购拨款记录 -->
+  	<select id="selectFundsRecordMap" resultType="map" parameterType="map">
+		select f.id,f.orderid,f.allmoney,f.fundsname,f.paymethod,f.payee,f.time,f.bankcard,f.reason,s.states from fundsrecord f left join state s on f.states = s.id 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+				order by f.orderid desc
+				limit #{begin},#{end}
+	</select>
+	
+  </mapper>
+

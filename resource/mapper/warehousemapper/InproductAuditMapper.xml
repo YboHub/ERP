@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+  <mapper namespace="com.aaa.dao.warehousedao.InProductAuditDao">
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from stockmanager
+  		<where>
+  			 <if test="(value!=null and value!='') and (name!=null and name!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<!-- 成品入库审核界面 -->
+  	<select id="selectAllInpro" resultType="map" parameterType="map">
+		select s.id,s.productionnum,p.pname,p.psize,p.pprice,s.auditstatus,s.remark,t.states from stockmanager s left join state t on s.auditstatus = t.id left join proinfo p on p.id= s.goodstype 
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		order by s.id desc
+				limit #{begin},#{end}
+	</select>
+	<select id="findCountByMapOne" parameterType="map" resultType="int">
+  		select count(id) from stockmanager
+  		<where>
+  			id = #{id}
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+	<select id="selectAllDetails" resultType="map" parameterType="map">
+		select s.id,p.pname,p.psize,p.pprice,s.remark,s.productionnum,s.inventoryunit,s.verifyman,s.audittime from stockmanager s left join  proinfo p on s.goodstype = p.id
+			<where>
+				 s.id = #{id} 
+				 <if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		order by s.id desc
+				limit #{begin},#{end}
+	</select> 
+	
+	<select id="productAudit" resultType="com.aaa.entity.warehouseentity.StockManager">
+		select s.id,s.goodstype,p.psize,p.pname,s.inventoryunit,s.auditstatus from stockmanager s left join proinfo p on p.id = s.goodstype where s.id = #{id}
+	</select>
+	<!-- 已通过审核 -->
+	<update id="savepassVerification" parameterType="com.aaa.entity.warehouseentity.StockManager">
+  		update stockmanager set auditstatus =8,audittime=#{audittime},remark=#{remark},verifyman=#{verifyman} where id = #{id}
+  	</update>
+	<insert id="savepassVerificationtwo" parameterType="com.aaa.entity.warehouseentity.StockManager">
+		insert into irofp(rkdh,goodstype,psize,pname,verifyman,inventoryunit,audittime) values(#{rkdh},#{goodstype},#{psize},#{pname},#{verifyman},#{inventoryunit},#{audittime})
+	</insert> 
+	<!-- 未通过审核 -->
+	<update id="failedPass" parameterType="com.aaa.entity.warehouseentity.StockManager">
+  		update stockmanager set remark=#{remark},auditstatus ='14',verifyman=#{verifyman},audittime = #{audittime} where id = #{id}
+  	</update>
+	
+	
+	<select id="rukudanhao" resultType="String">
+		select rkdh from irofp where id=(select max(id) from irofp)
+	</select>
+	<!-- 成品入库审核(驳回) -->
+	<select id="rkdhScrip" resultType="String">
+		select rkdh from scrapinventory where id=(select max(id) from scrapinventory)
+	</select>
+	<insert id="insertWaste" parameterType="com.aaa.entity.warehouseentity.StockManager">
+		insert into scrapinventory(rkdh,goodstype,inventoryunit,audittime,rname) values(#{rkdh},#{goodstype},#{inventoryunit},#{audittime},#{verifyman})
+	</insert>
+	<select id="selectStockById"  parameterType="int" resultType="com.aaa.entity.warehouseentity.StockManager">
+		select id,inventoryunit,cid from stockmanager where id = #{id}
+	</select>
+	<select id="selectZong" resultType="double" parameterType="com.aaa.entity.warehouseentity.StockManager">
+		select zong from scrapinventoryzong
+	</select>
+	<!-- 添加库存总量 -->
+	<update id="addFeiPZong" parameterType="com.aaa.entity.warehouseentity.StockManager">
+		update scrapinventoryzong set zong = #{zong} + #{inventoryunit}
+	</update>
+  </mapper>

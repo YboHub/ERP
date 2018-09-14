@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.mechanicalHelp.MechanicalHelpDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(mid) from mechanicalHelp 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectMechanicalHelpMap" resultType="map" parameterType="map">
+		 select a.* from(select m.* from(select mid,mlicensenumber,mtype,mbeginTime,mendTime,mmotorman,maccendant,mcause,msum,midentifier from mechanicalHelp
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 ) m order by m.mid asc) a 
+			<where>
+				 a.mid &gt;#{begin} and a.mid &lt;#{end} 
+			</where>
+	</select>
+	<insert id="save" parameterType="com.aaa.entity.mechanicalHelp.MechanicalHelp">
+		insert into mechanicalHelp (mid,mlicensenumber,mtype,mbeginTime,mendTime,mmotorman,maccendant,mcause,msum,midentifier) values(#{mid},#{mlicensenumber},#{mtype},#{mbeginTime},#{mendTime},#{mmotorman},#{maccendant},#{mcause},#{msum},#{midentifier})
+	</insert>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.lsh.RoleDao">
+	<select id="findRoleFunByRoleId" parameterType="int" resultType="map">
+		select * from t_role_fun where role_id = #{roleid}
+	</select>
+	<select id="findAllRole" resultType="map">
+		select * from positions
+	</select>
+	<select id="findAllFunction" resultType="map">
+		select * from t_function
+	</select>
+	<delete id="deleteRoleFun">
+		delete from t_role_fun where role_id = #{roleid}
+	</delete>
+	<insert id="insertRoleFun" parameterType="int">
+		insert into t_role_fun(role_id,fun_id) values(#{param1},#{param2})
+	</insert>
+	<!-- 获取职位列表总行数 -->
+	<select id="getAllRoleList" parameterType="map" resultType="int">
+		select count(id) from positions
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 获取职位列表集合 -->
+	<select id="getRoleList" parameterType="map" resultType="map">
+		select p.deptno,d.deptname,p.id,p.post from dept d left join positions p on d.deptno=p.deptno
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and p.${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+		order by d.deptno
+		limit #{begin},#{end}
+	</select>
+	<!-- 通过id获取职位信息 -->
+	<select id="getPostById" parameterType="int" resultType="map">
+		select id,post from positions where id=#{id}
+	</select>
+	<!-- 提交修改职位信息 -->
+	<update id="toUpdateRole" parameterType="com.aaa.entity.lsh.Positions">
+		update positions set post=#{post} where id=#{id}
+	</update>
+	<!-- 获取所有部门信息 -->
+	<select id="getDeptList" resultType="map">
+		select deptno,deptname from dept
+	</select>
+	<!-- 提交新增职位信息 -->
+	<insert id="toInsertRole" parameterType="com.aaa.entity.lsh.Positions">
+		insert into positions(deptno,post) values(#{deptno},#{post})
+	</insert>
+	<!-- 通过id删除指定职位 -->
+	<delete id="delRole" parameterType="int">
+		delete from positions where id=#{id}
+	</delete>
+</mapper>

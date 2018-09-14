@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.finance.SaleRecordDao">
+<!-- 销售记录统计管理Mapper -->
+<!-- 获总行数 -->
+	<select id="findContByMap" parameterType="map" resultType="map">
+		SELECT o.id    FROM orderinfo o
+			    left join client p on o.cno=p.cno 
+				left join income i on i.IncomeNum= o.orderno 
+				left join emp e on e.empno= o.empno 
+				left join state s on s.id = o.paytype   
+		<where>   <!-- 1=1是判断条件恒等于 -->
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and ${name} = #{value}
+		   <!-- ${name}这是一个EL表达式取值的方法
+				但是 #{} 和 ${} 在预编译中的处理是不一样的。#{} 在预处理时，会把参数部分用一个占位符 ? 代替，
+				变成如下的 sql 语句：
+				select * from user where name = ?;
+			　　	而 ${} 则只是简单的字符串替换，在动态解析阶段，该 sql 语句会被解析成
+				select * from user where name = 'zhangsan';
+			　　		以上，#{} 的参数替换是发生在 DBMS 中，而 ${} 则发生在动态解析过程中。
+			　　	那么，在使用过程中我们应该使用哪种方式呢？
+			　　	答案是，优先使用 #{}。因为 ${} 会导致 sql 注入的问题。-->
+			</if>
+		</where>
+			    and o.ordertime between '2018-01-01' and '2018-12-31' 
+				and o.paytype in (22,23,24) 
+	</select>
+		
+	<select id="selectSaleRecordMap" resultType="map" parameterType="map">
+		SELECT o.orderno,p.cname,i.IncomeMoney,e.ename,o.paytype,s.states,o.ordertime FROM orderinfo o 
+				left join client p on o.cno=p.cno 
+				left join income i on i.IncomeNum= o.orderno 
+				left join emp e on e.empno= o.empno 
+				left join state s on s.id = o.paytype 
+		<where> 
+			<if test="(value!=null and value!='') or (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		<!-- 根据时间段查询  [DATE_FORMAT格式化日期] -->
+			<if test="beginTime!=null and beginTime!=''">
+					<![CDATA[   and DATE_FORMAT(ordertime, '%Y-%m-%d')>=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d')   ]]>
+			</if>
+			<if test="endTime!=null and endTime!=''">
+					<![CDATA[  and DATE_FORMAT(ordertime, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')    ]]>
+			</if>
+		</where>
+				and o.ordertime between '2018-01-01' and '2018-12-31' 
+				and o.paytype in (22,23,24)
+				order by o.ordertime desc limit #{begin},#{end}
+	</select>
+	
+  </mapper>
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.emp.DeptDao">
+  	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(id) from dept 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 查询数据并分页 -->
+	<select id="selectDept" resultType="map" parameterType="map">
+		select id,deptno,deptname,tel,site,remark from dept 
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			 order by id desc
+			limit #{begin},#{end}
+	</select>
+	
+	<!-- 查询部门编号返回 -->
+	<select id="selectDeptno" resultType="map">
+		select deptno from dept where deptno=#{deptno}
+	</select>
+	
+	<!-- 添加部门 -->
+	<insert id="saveDept" parameterType="com.aaa.entity.emp.Dept">
+		insert into dept(deptno,deptname,tel,site,remark) values(#{deptno},#{deptname},#{tel},#{site},#{remark})
+	</insert>
+	
+	<!-- 修改部门返回修改信息的值 -->
+	<select id="toUpdate"  resultType="map">
+  		select id,deptno,deptname,tel,site,remark from dept where id=#{id}
+  	</select>
+  	
+  	<!-- 修改部门信息 -->
+  	<update id="updatePer" parameterType="com.aaa.entity.emp.Dept">
+  		update dept set deptno=#{deptno},deptname=#{deptname},tel=#{tel},site=#{site},remark=#{remark} where id=#{id}
+  	</update>
+  	
+  	<!-- 查询部门里是否存在员工 -->
+  	<select id="selectEmp" resultType="map">
+  		select deptno from emp where deptno=#{deptno} and state='0'
+  	</select>
+  	
+  	<!-- 删除部门 -->
+  	<delete id="delDept" parameterType="int">
+  		delete from dept where id=#{id}
+  	</delete>
+  	<!-- 查询下拉框部门值 -->
+	<select id="selectDeptnoo" resultType="com.aaa.entity.emp.Dept">
+		select deptno,deptname from dept
+	</select>
+	<!-- 添加职位 -->
+	<insert id="savePosition" parameterType="com.aaa.entity.emp.Dept">
+		insert into positions(deptno,post) values(#{deptno},#{post})
+	</insert>
+  </mapper>

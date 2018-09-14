@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.manger.MaterialchuDao">
+  	<select id="findCountBymaterial" resultType="int" parameterType="map">
+		select count(mid) from material where mzhuang=1
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectmaterial" resultType="map" parameterType="map">
+		select mid,mnumber,pnumber,pnum,mzhuang from material where mzhuang=1
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 	order by mid desc
+			limit #{begin},#{end}
+	</select>
+	<select id="selectbymaterial" resultType="com.aaa.entity.manger.Material" parameterType="com.aaa.entity.manger.Material">
+		select mid,mnumber,pnumber,mzhuang from material where mid=#{mid}
+	</select>
+	<select id="selectma" resultType="com.aaa.entity.manger.Material" parameterType="com.aaa.entity.manger.Material">
+	select f.pname mname,round(((sum(p.pnum))*f.pshu)*1.05,0) zong from orderdetail p LEFT JOIN formula f on f.ptype=p.psize LEFT JOIN material m on m.mnumber=p.orderno where mid=#{mid} and p.state=12 GROUP BY f.pname
+	</select>
+	
+	<select id="select" parameterType="com.aaa.entity.manger.Material" resultType="double">
+		select weight from yuanliao where name=#{name}
+	</select>
+	<update id="update" parameterType="com.aaa.entity.manger.Material">
+		update yuanliao set weight=#{oldzong} - #{zong} where name=#{mname}
+	</update>
+	<update id="up" parameterType="com.aaa.entity.manger.Material">
+		update material set mzhuang=2 where mid=#{mid}
+	</update>
+	<insert id="insert" parameterType="com.aaa.entity.manger.Material">
+		insert into yuanchu(mnumber,pnumber,mperson,zhuang)values(#{mnumber},#{pnumber},#{mname},#{mzhuang})
+	</insert>
+	<update id="upda" parameterType="com.aaa.entity.manger.Material">
+		update plan set pzhi=2 where pnumber=#{pnumber}
+	</update>
+  </mapper>

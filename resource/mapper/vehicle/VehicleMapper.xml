@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.vehicle.VehicleDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(vid) from vehicle
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectVehicleMap" resultType="map" parameterType="map">
+		select a.* from(select m.* from(select vid,vtype,vlicensenumber,vmotorman from vehicle
+ 			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+ 					${name} like concat('%',concat(#{value},'%'))
+				</if>
+				<!-- <![CDATA[ and r>#{begin} and r<#{end} ]]> -->
+			</where>
+		 ) m order by m.vid  asc) a 
+			<where>
+				a.vid &gt;#{begin} and a.vid &lt;#{end}
+			</where> 
+	</select>
+	<insert id="save" parameterType="com.aaa.entity.vehicle.Vehicle">
+		insert into vehicle (vid,vtype,vlicensenumber,vmotorman) values(#{vid},#{vtype},#{vlicensenumber},#{vmotorman})
+	</insert>
+	<delete id="deleteVehicle" parameterType="com.aaa.entity.vehicle.Vehicle">
+		delete from vehicle where vid = #{vid}
+	</delete>
+	<select id="updateVehicle" resultType ="com.aaa.entity.vehicle.Vehicle">
+		select vid,vtype,vlicensenumber,vmotorman from vehicle where vid =#{vid}
+	</select>
+	<update id="vehicleEdit" parameterType="com.aaa.entity.vehicle.Vehicle">
+		update vehicle set vtype = #{vtype},vlicensenumber = #{vlicensenumber},vmotorman=#{vmotorman} where vid = #{vid}
+	</update>
+</mapper>

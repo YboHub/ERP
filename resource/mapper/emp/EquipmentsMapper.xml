@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.emp.EquipmentDao">
+  <!-- 查询 -->
+  	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(id) from devices 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 分页 -->
+	<select id="selectequipment" resultType="map" parameterType="map">
+		select id,equipment,dproduct,equipmentnumber,operation,dname from devices where audit='1'
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by id desc
+			limit #{begin},#{end}
+	</select>
+	<!-- 点击修改 -->
+	<update id="updatequipment" parameterType="com.aaa.entity.emp.Equipment">
+		update devices set operation='1' where id=#{id}
+	</update>
+	<!-- 点击运行 -->
+	<update id="updatequipments" parameterType="com.aaa.entity.emp.Equipment">
+		update devices set operation='0' where id=#{id}
+	</update>
+	<!-- 添加 -->
+	<insert id="addEquipment" parameterType="com.aaa.entity.emp.Equipment">
+		insert into devices(equipment,dproduct,dprice,dbrand,equipmentnumber,dname) values(#{equipment},#{dproduct},#{dprice},#{dbrand},#{equipmentnumber},#{dname})
+	</insert>
+	<select id="equipment" resultType="String">
+		select equipmentnumber from devices where id=(select max(id) from devices)
+	</select>
+  </mapper>

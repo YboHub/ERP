@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.apauditor.ProcurementDao">
+	<!-- 获取审核总行数 -->
+	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from procurement
+  		<where>
+  			states=4 
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<!-- 查询审核数据  分页 -->
+  	<select id="selectProcurementMap" resultType="map" parameterType="map">
+		select p.id,p.orderid,p.caozuoname,p.apptime,s.states from procurement p left join state s on p.states = s.id 
+			<where>
+			p.states=4 
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by p.orderid desc
+			limit #{begin},#{end}
+	</select>
+	<!-- 查询详情 -->
+	<select id="selectdetailsMap" resultType="map" parameterType="string">
+		select d.orderid,d.goodsname,d.types,d.company,d.weights,d.price,d.money from procurement p left join purorder d on d.orderid=p.orderid where p.id=#{id}
+	</select>
+	<!-- 查询procurement状态 理由
+	<select id="selectPro" parameterType="int" resultType="com.aaa.entity.apauditor.Procurement">
+		select id,reason,states from procurement where id=#{id}
+	</select> -->
+	<!-- 同意按钮修改状态 理由  -->
+	<update id="toUpdate" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states=2,reason=#{reason} where orderid=#{orderid}
+	</update>
+	<!-- 不同意按钮修改状态 理由 -->
+	<update id="tooUpdate" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states=11,reason=#{reason} where orderid=#{orderid}
+	</update>
+	<!-- 插入purchase_record记录表 -->
+	<insert id="insertPurchases" parameterType="com.aaa.entity.apauditor.PurchaseRecord">
+		insert into purchase_record(orderid,reason,buyer,states,caozuoname) values(#{orderid},#{reason},#{buyer},2,#{caozuoname})
+	</insert>
+	<insert id="insertPurchase" parameterType="com.aaa.entity.apauditor.PurchaseRecord">
+		insert into purchase_record(orderid,reason,buyer,states,caozuoname) values(#{orderid},#{reason},#{buyer},1,#{caozuoname})
+	</insert>
+</mapper>

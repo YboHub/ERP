@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.emp.MaterualreturnDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(id) from materialreturn 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectMaterualreturn" resultType="map" parameterType="map">
+		select id,orderid, goodsname,company,price,weights,money,reason,returnname from materialreturn
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by id desc
+			limit #{begin},#{end}
+	</select>
+</mapper>

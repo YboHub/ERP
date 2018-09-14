@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.sell.ClientDao">
+	<sql id="clientField">c.cno,c.cname,c.csort,c.carea,c.business,c.cphone</sql>
+	<!-- 查询被编辑客户信息 -->
+	<select id="selectEditClient" resultType="com.aaa.entity.sell.Client" parameterType="com.aaa.entity.sell.Client">
+		select e.ename,c.id,<include refid="clientField"/> from client c left join emp e on c.empno = e.empno where c.id = #{id}
+	</select>
+	<!-- 查询总行数 -->
+	<select id="gainTotalLineNum" resultType="int" parameterType="map">
+		select count(id) from client 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 查询客户信息 -->
+	<select id="selectClient" resultType="map" parameterType="map">
+		select m.* from(select e.ename,c.id,<include refid="clientField"/> from client c left join emp e on c.empno = e.empno
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		) m order by m.id desc limit #{begin},#{end}
+	</select>
+	<!-- 根据客户名称查询客户信息 -->
+	<select id="selectByCname" parameterType="com.aaa.entity.sell.Client" resultType="com.aaa.entity.sell.Client">
+		select <include refid="clientField"/>,e.ename from client c left join emp e on c.empno = e.empno where cname=#{cname}
+	</select>
+	<!-- 查询客户名称 -->
+	<select id="selectCname" resultType="com.aaa.entity.sell.Client">
+		select cname from client
+	</select>
+	<!-- 添加客户 -->
+	<insert id="addClient" parameterType="com.aaa.entity.sell.Client" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		insert into client(cno,cname,csort,carea,business,cphone,empno) values(#{cno},#{cname},#{csort},#{carea},#{business},#{cphone},#{empno})
+	</insert>
+	<!-- 更改客户信息 -->
+	<update id="updateClient" parameterType="com.aaa.entity.sell.Client">
+		update client set cname = #{cname},csort = #{csort},carea = #{carea},business = #{business},cphone = #{cphone},empno = #{empno} where id = #{id}
+	</update>
+	<!-- 更新客户编号 -->
+	<update id="updateClientNum" parameterType="com.aaa.entity.sell.Client">
+		update client set cno = #{cno} where id = #{id}
+	</update>
+	<!-- 根据业务员姓名查询业务员编号 -->
+	<select id="selectEmpnoByEname" parameterType="com.aaa.entity.sell.Client" resultType="com.aaa.entity.sell.Client">
+		select empno from emp where ename = #{ename}
+	</select>
+	<!-- 根据业务员编号查询业务员名称 -->
+	<select id="selectEnameByEmpno" parameterType="com.aaa.entity.sell.Client" resultType="com.aaa.entity.sell.Client">
+		select ename from emp where empno = #{empno}
+	</select>
+	<!-- 根据员工姓名查询部门编号 -->
+	<select id="selectDeptByEname" resultType="map">
+		select deptno from emp where ename = #{ename}
+	</select>
+	<!-- 查询业务员名称 -->
+	<select id="selectEname" resultType="com.aaa.entity.sell.Client">
+		select ename from emp where deptno = #{deptno}
+	</select>
+	<!-- 根据客户名称查询客户信息 -->
+	<select id="selectClientByCname" resultType="com.aaa.entity.sell.Client">
+		select cname from client where cname = #{cname}
+	</select>
+</mapper>

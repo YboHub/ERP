@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.lsh.ProRecordDao">
+  	<select id="getAllCount" parameterType="map" resultType="int">
+  		select count(productionnum) from stockmanager
+  		<where> dnumber=#{dnumber}
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<select id="selectAllProRecord" parameterType="map" resultType="map">
+  		select s.productionnum,concat(psize,pname) goodstype,s.inventoryunit,c.cxian,s.protime from stockmanager s 
+  		left join proinfo p on s.goodstype=p.id 
+  		left join capacity c on s.cid=c.cid
+  		<where> s.dnumber=#{dnumber}
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  		order by s.id desc
+  		limit #{begin},#{end}
+  	</select>
+  	<insert id="toSaveProRecord" parameterType="com.aaa.entity.warehouseentity.StockManager">
+  		insert into stockmanager(dnumber,productionnum,goodstype,inventoryunit,cid,protime,propeople) values(#{dnumber},#{productionnum},#{goodstype},#{inventoryunit},#{cid},#{protime},#{propeople})
+  	</insert>
+  	<select id="selectAllCapacity" parameterType="int" resultType="map">
+  		select cid,cxian from capacity where cnumber=#{id}
+  	</select>
+  	<select id="getDoodsType" resultType="map">
+  		select concat(psize,pname) goodstype,id from proinfo
+  	</select>
+  	<select id="getLastProductionnum" resultType="String">
+  		select productionnum from stockManager where id=(select max(id) from stockManager)
+  	</select>
+  </mapper>

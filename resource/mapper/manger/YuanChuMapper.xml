@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.manger.YuanChuDao">
+  	<select id="findCountyuanchu" resultType="int" parameterType="map">
+		select count(mid) from yuanchu
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectyuanchu" resultType="map" parameterType="map">
+		select mid,mnumber,pnumber,pnum,zhuang,mperson,addtime from yuanchu
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 	order by mid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<select id="selectmaterialss" parameterType="com.aaa.entity.manger.YuanChu" resultType="com.aaa.entity.manger.YuanChu">
+			select f.pname name,round(((sum(p.pnum))*f.pshu)*1.05,0) zong from orderdetail p LEFT JOIN formula f on f.ptype=p.psize LEFT JOIN yuanchu m on m.mnumber=p.orderno where mid=#{mid} and p.state=12 GROUP BY f.pname
+	</select>
+  </mapper>

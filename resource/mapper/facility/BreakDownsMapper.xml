@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+<mapper namespace="com.aaa.dao.facility.BreakDownsDao">
+	<!-- id 唯一 名称为dao类中的方法名  resultType 返回结果类型 -->
+	<select id="findCountBybreakDowns" resultType="int" parameterType="map">
+		select count(bid) from breakdowns 
+		<where>
+			<!--当传入的参数name不为null时才执行这个语句  模糊查询-->
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 获取总行数   查询所有信息 -->
+	<select id="selectBreakDownsMap" resultType="map" parameterType="map">
+		 select a.* from(select m.* from(select bid,breakdownnumber,equipmentnumber,reporttime,failurestate,failurecause from breakdowns
+			<where>
+			<!-- desc 降序排序
+				 asc  升序排序 
+				$ 字符串拼接  (小心)sql注入问题
+				# 占位符 用于变量(类型)替换   对于变量部分，使用# 防止sql注入  (prepareStement)   
+			 -->
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 ) m order by m.bid desc) a 
+			 <where>
+				 a.bid &gt;#{begin} and a.bid &lt;#{end} 
+			</where> 
+	</select>
+	<!-- 插入sql语句 -->
+	<insert id="save" parameterType="com.aaa.entity.facility.BreakDowns">
+		insert into breakdowns (bid,breakdownnumber,equipmentnumber,reporttime,failurestate,failurecause) values(#{bid},#{breakdownnumber},#{equipmentnumber},#{reporttime},#{failurestate},#{failurecause})
+	</insert>
+	<!--查询下拉框 -->
+	<select id="selectBreakDowns" resultType="com.aaa.entity.emp.Equipment">
+		select id, equipmentnumber from devices where audit='1'
+	</select>
+	<!-- 获取单号 -->
+	<select id="breakDowns" resultType="String">
+		select breakdownnumber from breakdowns where bid=(select max(bid) from breakdowns)
+	</select>
+</mapper>

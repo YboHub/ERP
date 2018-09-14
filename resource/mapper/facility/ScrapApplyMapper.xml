@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+<mapper namespace="com.aaa.dao.facility.ScrapApplyDao">
+	<!-- id 唯一 名称为dao类中的方法名  resultType 返回结果类型 -->
+	<select id="findCountByscrapApply" resultType="int" parameterType="map">
+		select count(sid) from scrapapply 
+		<where>
+			<!--当传入的参数name不为null时才执行这个语句  模糊查询-->
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 获取总行数  查询所有信息-->
+	<select id="selectScrapApplyMap" resultType="map" parameterType="map">
+		 select a.* from(select m.* from(select sid,equipmentnumber,acceptanceDates,price,buyingTime,rejectionTime,cause,proposer,appraiser,remark,auditor,audit from scrapapply
+			<where>
+			<!-- desc 降序排序
+				 asc  升序排序
+				$ 字符串拼接  (小心)sql注入问题
+				# 占位符 用于变量(类型)替换   对于变量部分，使用# 防止sql注入  (prepareStement)
+			 -->
+				<if test="(value!=null and value!='') and (name!=null and name!='')">   
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 ) m order by m.sid desc) a 
+			<where>
+				 a.sid &gt;#{begin} and a.sid &lt;#{end} 
+			</where>
+	</select>
+	<!-- 插入sql语句 -->
+	<insert id="save" parameterType="com.aaa.entity.facility.ScrapApply">
+		insert into scrapapply (sid,equipmentnumber,acceptanceDates,price,buyingTime,rejectionTime,cause,proposer,appraiser,remark,auditor,audit) values(#{sid},#{equipmentnumber},#{acceptanceDates},#{price},#{buyingTime},#{rejectionTime},#{cause},#{proposer},#{appraiser},#{remark},#{auditor},#{audit})
+	</insert>
+	<!-- 获取单号 -->
+	<select id="scrapApply" resultType="String">
+		select equipmentnumber from scrapapply where sid=(select max(sid) from scrapapply)
+	</select>
+	<!--跳转修改页面  -->
+	<select id="toEdit"  resultType="map">
+  		select sid,equipmentnumber,acceptanceDates,price,buyingTime,rejectionTime,cause,proposer,appraiser,remark,auditor,audit from scrapapply where sid=#{sid}
+  	</select>
+  	<!--修改保存 -->
+  	<update id="saveUpdate" parameterType="com.aaa.entity.facility.ScrapApply">
+  		update scrapapply set equipmentnumber=#{equipmentnumber},acceptanceDates=#{acceptanceDates},price=#{price},buyingTime=#{buyingTime},cause=#{cause},proposer=#{proposer},appraiser=#{appraiser},remark=#{remark},auditor=#{auditor},audit=#{audit} where sid=#{sid}
+  	</update>
+	
+	<!-- 审核表返回值 -->
+	<select id="selectScrapApply" resultType="com.aaa.entity.facility.ScrapApply" parameterType="com.aaa.entity.facility.ScrapApply">
+		select sid,auditor,remark from scrapapply where sid = #{sid}
+	</select>
+	<!-- 审核通过 -->
+	<update id="updateScrapApply" parameterType="com.aaa.entity.facility.ScrapApply">
+		update scrapapply set audit='1',auditor=#{auditor},remark=#{remark} where sid=#{sid}
+	</update>
+	
+	<!-- 审核不通过 -->
+	<update id="noupdateScrapApply" parameterType="com.aaa.entity.facility.ScrapApply">
+		update scrapapply set audit='2',auditor=#{auditor},remark=#{remark} where sid=#{sid}
+	</update>
+</mapper>

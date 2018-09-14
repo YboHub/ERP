@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.emp.AppropriationDao">
+  	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(id) from Appropriation 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 查询数据并分页 -->
+	<select id="selectAppropriation" resultType="map" parameterType="map">
+		select id,maschinennummer,genre,sumo,auditor from Appropriation 
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			 order by id desc
+			limit #{begin},#{end}
+	</select>
+	<select id="selAppropriation" resultType="map">
+		select id,maschinennummer,sumo from Appropriation where id=#{id}
+	</select>
+	
+	<!-- 拨款添加到拨款记录 -->
+	<insert id="saveFundsrecord" parameterType="com.aaa.entity.emp.Appropriation">
+		insert into fundsrecord(orderid,allmoney,fundsname,paymethod,payee,states,bankcard,reason) values(#{maschinennummer},#{sumo},#{fundsname},#{paymethod},#{payee},'15',#{bankcard},#{reason})
+	</insert>
+	
+	<!-- 拨款后删除 -->
+	<delete id="deleteAppropriation" parameterType="int">
+		delete from appropriation where id=#{id}
+	</delete>
+	
+	<!-- 添加财务拨款 -->
+	<insert id="addAppropriation" parameterType="com.aaa.entity.emp.Appropriation">
+		insert into disburse(DisNum,DisMoney,DisDate) values(#{maschinennummer},#{sumo},#{time})
+	</insert>
+</mapper>

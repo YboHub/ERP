@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.aaa.dao.apauditor.MarketDao">
+ 		<!-- 获取审核总行数 -->
+	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from returnorder
+  		<where>
+  			rstate=18
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<!-- 查询审核数据  分页 -->
+  	<select id="selectReturnOrderMap" resultType="map" parameterType="map">
+		select r.id,r.rorderno,r.rpno,r.rpname,r.rprice,r.rpnum,r.rsubtotal,r.rtype,r.rordertime,r.returnreason,s.states from returnorder r left join state s on r.rstate=s.id
+			<where>
+				r.rstate=18
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by r.rorderno desc
+			limit #{begin},#{end}
+	</select>
+	<select id="selectRet" parameterType="int" resultType="com.aaa.entity.sell.ReturnOrder">
+		select id,rorderno,rpno,rpname,rprice,rpnum,rsubtotal,rtype,rordertime,returnreason,rstate from returnorder  where id=#{id}
+	</select>
+	<!-- 同意按钮修改状态 理由  -->
+	<update id="toUpdate" parameterType="com.aaa.entity.sell.ReturnOrder">
+		update returnorder set rstate=2,reason=#{reason} where id=#{id}
+	</update>
+	<!-- 不同意按钮修改状态 理由 -->
+	<update id="tooUpdate" parameterType="com.aaa.entity.sell.ReturnOrder">
+		update returnorder set rstate=1,reason=#{reason} where id=#{id}
+	</update>
+	<insert id="inserMarket" parameterType="com.aaa.entity.apauditor.Market">
+		insert into market(rorderno,rpno,rpname,rprice,rpnum,rsubtotal,rtype,rordertime,returnreason,rstate,reason,auditor) values(#{rorderno},#{rpno},#{rpname},#{rprice},#{rpnum},#{rsubtotal},#{rtype},#{rordertime},#{returnreason},2,#{reason},#{auditor})
+	</insert>
+	<insert id="insertToMarket" parameterType="com.aaa.entity.apauditor.Market">
+		insert into market(rorderno,rpno,rpname,rprice,rpnum,rsubtotal,rtype,rordertime,returnreason,rstate,reason,auditor) values(#{rorderno},#{rpno},#{rpname},#{rprice},#{rpnum},#{rsubtotal},#{rtype},#{rordertime},#{returnreason},1,#{reason},#{auditor})
+	</insert>
+	
+	<!-- 获取审核记录总行数 -->
+	<select id="findCountByMarket" parameterType="map" resultType="int">
+  		select count(id) from market
+  		<where>
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<!-- 查询审核记录数据  分页 -->
+  	<select id="selectMarketMap" resultType="map" parameterType="map">
+		select id,rorderno,rpno,rpname,rprice,rpnum,rsubtotal,rtype,reason,auditor,rstate from market
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by rorderno desc
+			limit #{begin},#{end}
+	</select>
+ </mapper>

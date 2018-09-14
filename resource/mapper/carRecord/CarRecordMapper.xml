@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.carRecord.CarRecordDao">
+	<select id="findCountBycarRecord" resultType="int" parameterType="map">
+		select count(cid) from carRecord 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectCarRecordMap" resultType="map" parameterType="map">
+		 select a.* from(select m.* from(select cid,cdate,ctransportPeople,cphone,coutOfTime,ccause,csite,crunningTime,cbuildingUser,csignature from  carRecord
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 ) m order by m.cid asc) a 
+			<where>
+				 a.cid &gt;#{begin} and a.cid &lt;#{end} 
+			</where>
+	</select>
+	<insert id="save" parameterType="com.aaa.entity.carRecord.CarRecord">
+		insert into carRecord (cid,cdate,ctransportPeople,cphone,coutOfTime,ccause,csite,crunningTime,cbuildingUser,csignature) values(#{cid},#{cdate},#{ctransportPeople},#{cphone},#{coutOfTime},#{ccause},#{csite},#{crunningTime},#{cbuildingUser},#{csignature})
+	</insert>
+</mapper>

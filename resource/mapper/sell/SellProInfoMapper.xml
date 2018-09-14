@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.sell.SellProInfoDao">
+	<select id="gainTotalLineNum" resultType="int" parameterType="map">
+		select count(id) from proinfo
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectProduct" resultType="map" parameterType="map">
+		select p.id,p.pno,p.psize,p.pname,p.pprice,p.punit,i.pnum from proinfo
+		p left join inventorygross i on p.pno = i.pno
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				p.${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+		order by p.id desc limit #{begin},#{end}
+	</select>
+	<!-- 查询产品编号 -->
+	<select id="selectPno" resultType="com.aaa.entity.sell.OrderDetail">
+		select pno from proinfo
+	</select>
+	<!-- 查询产品名称 -->
+	<select id="selectPname" resultType="com.aaa.entity.sell.OrderDetail">
+		select pname from proinfo
+		group by pname
+	</select>
+	<update id="updatePriceByPno" parameterType="com.aaa.entity.sell.ProduceInfo">
+		update proinfo set
+		pprice = #{pprice} where pno = #{pno}
+	</update>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.finance.FinancesDao">
+		
+<!-- 获取总行数 -->
+	<select id="findCountByMap" parameterType="map" resultType="int">
+		select count(r.fid) from finances r
+		<where> 1=1
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				and ${name} = #{value}
+			</if>
+		</where>
+	</select>
+	
+<!-- 查询表信息 -->
+	<select id="selectFinancesMap" resultType="map" parameterType="map">
+		select m.* from(select onum,ftype,fholder,ftime,fpayee,fmoney,fremark from finances 
+			<where> 1=1 
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			<!-- 根据时间段查询 -->
+				<if test="beginTime!=null and beginTime!=''">
+						<![CDATA[   and DATE_FORMAT(ftime, '%Y-%m-%d')>=  DATE_FORMAT(#{beginTime}, '%Y-%m-%d')   ]]>
+				</if>
+				<if test="endTime!=null and endTime!=''">
+						<![CDATA[  and DATE_FORMAT(ftime, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')    ]]>
+				</if>
+			</where>
+					) m order by m.ftime desc limit #{begin},#{end}
+	</select>				
+  </mapper>
+<!-- select sum(money) FROM finance where fdate>=? AND fdate<? and mid=? GROUP BY SUBSTR(fdate,6,2)"; -->

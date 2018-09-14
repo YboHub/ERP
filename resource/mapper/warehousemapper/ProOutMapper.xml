@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+  <mapper namespace="com.aaa.dao.warehousedao.ProOutDao">
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from orderinfo  
+  		<where>
+  			 statess in(9,10)
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<select id="selectProOut" resultType="map" parameterType="map">
+  		select m.* from(select o.id,d.pname,d.pprice,d.psize,o.orderno,d.pnum,s.states,o.statess from orderinfo o LEFT JOIN orderdetail d on d.orderno = o.orderno left join state s on s.id=o.statess where o.statess in(9,10) GROUP BY o.orderno) m  
+			<where>
+				
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and	${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by m.id desc
+				limit #{begin},#{end}
+	</select>
+	<select id="findCountByMapOne" parameterType="map" resultType="int">
+  		select count(id) from orderdetail    
+  		<where>
+  		orderno=#{orderno}
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+	<select id="selOutDetails" resultType="map" parameterType="map">
+		select o.id,o.orderno,o.pprice,o.pname,o.psize,s.states,o.pnum,c.cname,i.ordertime,e.ename,o.mtotal from orderdetail o left join orderinfo i  on o.orderno=i.orderno LEFT JOIN state s on o.state = s.id left join client c on i.cno = c.cno left join emp e on e.empno = c.empno
+			<where>
+			o.orderno=#{orderno}
+				 <if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		order by o.id desc
+				limit #{begin},#{end}
+	</select> 
+	<select id="selProOut" resultType="com.aaa.entity.sell.OrderDetail">
+		select o.orderno,o.mtotal,d.pno,d.msubtotal,d.psize from orderinfo o LEFT JOIN orderdetail d on o.orderno = d.orderno where o.orderno = #{orderno}
+	</select>
+	<!-- 出库成功  修改状态 -->
+	<update id="updateProOut" parameterType="int">
+		update  orderinfo  set statess ='9' where id=#{id}
+	</update>
+	
+	<select id="selectOrderinfoById" resultType="com.aaa.entity.warehouseentity.Cpck"  parameterType="int">
+		select o.id,d.pname,d.pno,d.pprice,d.psize,o.orderno,d.pnum from orderinfo o LEFT JOIN orderdetail d on d.orderno = o.orderno left join state s on s.id=o.statess where o.id=#{id}  
+	</select>
+	
+	<select id="selectGross" resultType="double">
+		select pnum from inventorygross where pno=#{pno}
+	</select>
+	<update id="reduceGross" parameterType="com.aaa.entity.warehouseentity.Cpck">
+		update inventorygross set pnum = #{oldUnit} - #{pnum} where pno=#{pno}
+	</update>
+	<select id="selectCKDH" resultType="String">
+		select ckdh from arod where id=(select max(id) from arod)
+	</select>
+	<!-- 将出库记录插入arod表中 -->
+	<insert id="insertArod"  parameterType="com.aaa.entity.warehouseentity.Cpck">
+		insert into arod(orderno,ckdh,pno,pnum,rtime,ckname) values(#{orderno},#{ckdh},#{pno},#{pnum},#{ctime},#{ckname})
+	</insert>
+	<!-- 查询库存总量 -->
+	<select id="selWareAll" resultType="com.aaa.entity.warehouseentity.Cpck">
+		SELECT c.orderno,p.psize,p.pnum kz,c.pnum zl,(p.pnum-c.pnum) sy from inventorygross p LEFT JOIN orderdetail c on p.psize=c.psize WHERE c.orderno=#{orderno} GROUP BY p.psize
+	</select>
+  </mapper>

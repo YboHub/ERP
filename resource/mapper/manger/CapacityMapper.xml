@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.manger.CapacityDao">
+	<select id="findCountByCapacity" resultType="int" parameterType="map">
+		select count(cid) from Capacity
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectCapacity" resultType="map" parameterType="map">
+		select cid,cnumber,cmin,cmax,cdan,cxian from Capacity
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by cid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<insert id="addmanger" parameterType="com.aaa.entity.manger.Capacity">
+		insert into Capacity(cid,cnumber,cmin,cmax,cdan,cxian)values(#{cid},#{cnumber},#{cmin},#{cmax},#{cdan},#{cxian})
+	</insert>
+	
+	<delete id="deletemanger" parameterType="com.aaa.entity.manger.Capacity">
+		delete from Capacity where cid=#{cid}
+	</delete>
+	
+	<select id="selectmangers" parameterType="com.aaa.entity.manger.Capacity" resultType="com.aaa.entity.manger.Capacity">
+		select cid,cnumber,cmin,cmax,cdan,cxian from Capacity where cid=#{cid}
+	</select>
+	
+	<update id="updatemanger" parameterType="com.aaa.entity.manger.Capacity">
+		update Capacity set  cnumber=#{cnumber},cmin=#{cmin},cmax=#{cmax},cdan=#{cdan},cxian=#{cxian} where cid=#{cid}
+	</update>
+</mapper>

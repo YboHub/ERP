@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.ischeck.IscheckDao">
+	<!-- 获取总行数 -->
+	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from purorder
+  		<where>
+  			states=20
+  			<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+  		</where>
+  	</select>
+  	<!-- 查询数据  分页 -->
+  	<select id="selectIscheckMap" resultType="map" parameterType="map">
+		select p.id,p.orderid,p.goodsname,p.types,p.weights,s.states from purorder p left join state s on p.states=s.id
+			<where>
+			p.states=20
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by p.orderid desc
+			limit #{begin},#{end}
+	</select>
+	<select id="selectPur" parameterType="int" resultType="com.aaa.entity.purchase.PurOrder">
+		select id,orderid,types,goodsname,weights from purorder where id=#{id}
+	</select>
+	<!-- 合格按钮 -->
+	<update id="toUpdate" parameterType="com.aaa.entity.purchase.PurOrder">
+		update purorder set states='13',reason=#{reason} where id=#{id}
+	</update>
+	<!-- 插入quality_record记录表 -->
+	<insert id="insertQualityRecord" parameterType="com.aaa.entity.apauditor.QualityRecord">
+		insert into quality_record(orderid,types,goodsname,weights,states,reason,qualityname) values(#{orderid},#{types},#{goodsname},#{weights},13,#{reason},#{qualityname})
+	</insert>
+	<!-- 不合格按钮 -->
+	<update id="tooUpdate" parameterType="com.aaa.entity.purchase.PurOrder">
+		update purorder set states='14',reason=#{reason} where id=#{id}
+	</update>
+	<update id="updatePro" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states='14' where orderid=#{orderid}
+	</update>
+	<!-- 插入quality_record记录表 -->
+	<insert id="insertQualityRe" parameterType="com.aaa.entity.apauditor.QualityRecord">
+		insert into quality_record(orderid,types,goodsname,weights,states,reason,qualityname) values(#{orderid},#{types},#{goodsname},#{weights},14,#{reason},#{qualityname})
+	</insert>
+	
+	
+	<select id="findCountByMapQuality" parameterType="map" resultType="int">
+  		select count(id) from quality_record
+  		<where>
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<!-- 查询审核数据  分页 -->
+  	<select id="selectQualityRecordMap" resultType="map" parameterType="map">
+		select id,orderid,goodsname,types,time,reason,qualityname,weights,states from quality_record
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by orderid desc
+			limit #{begin},#{end}
+	</select>
+</mapper>

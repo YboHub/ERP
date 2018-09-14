@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.sell.OrderDao">
+	<sql id="orderDeatilField">orderno,pno,pname,pprice,psize,pnum,msubtotal,mtotal,state,punit
+	</sql>
+	<!-- 通过产品名称查询产品信息 -->
+	<select id="selectProInfoByPname" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="com.aaa.entity.sell.OrderDetail">
+		select pno,psize from proinfo
+		<where>
+			pname = #{pname}
+			<if test="pno!=null and pno!=''">
+				and pno = #{pno}
+			</if>
+		</where>
+	</select>
+	<!-- 通过产品编号查询产品信息 -->
+	<select id="selectProInfoByPno" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="com.aaa.entity.sell.OrderDetail">
+		select pname,psize,pprice from proinfo where pno = #{pno}
+	</select>
+	<!-- 通过产品型号查询产品信息 -->
+	<select id="selectProInfoByPsize" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="com.aaa.entity.sell.OrderDetail">
+		select pprice,pno from proinfo where psize = #{psize}
+	</select>
+	<!-- 总行数 -->
+	<select id="gainTotalLineNum" resultType="int" parameterType="map">
+		select count(orderno) from orderinfo o left join client c on o.cno =
+		c.cno
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 订单信息列表 -->
+	<select id="selectOrderInfo" resultType="map" parameterType="map">
+		select
+		o.orderno,o.id,o.mtotal,o.remark,o.statess,o.paytype,o.dpval,DATE_FORMAT(ordertime,'%Y-%m-%d
+		%H:%i:%s')
+		ordertime,c.cname,c.carea,c.cphone,e.ename from orderinfo o
+		left join
+		client c on o.cno = c.cno left join emp e on o.empno =
+		e.empno
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+		order by o.id desc limit #{begin},#{end}
+	</select>
+	<!-- 根据产品编号查询订单信息 -->
+	<select id="selectClientInfoByOrderNo" parameterType="com.aaa.entity.sell.OrderInfo"
+		resultType="map">
+		select
+		o.id,o.orderno,o.remark,o.mtotal,o.statess,c.cname,c.carea,c.cphone,e.ename
+		from
+		orderinfo o
+		left join client c on o.cno = c.cno left join emp e on
+		o.empno = e.empno
+		where orderno = #{orderno}
+		order by o.id desc
+	</select>
+	<!-- 根据产品编号查询订单详情 查看详情页面 -->
+	<select id="selectOrderInfoByOrderNo" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="com.aaa.entity.sell.OrderDetail">
+		select id,
+		<include refid="orderDeatilField" />
+		from orderdetail where orderno = #{orderno}
+	</select>
+	<!-- 根据客户名称查询客户编号 -->
+	<select id="selectCnoByCname" parameterType="com.aaa.entity.sell.OrderInfo"
+		resultType="com.aaa.entity.sell.OrderInfo">
+		select cno from client where cname = #{cname}
+	</select>
+	<!-- 根据员工名称查询员工编号 -->
+	<select id="selectEnoByEname" parameterType="com.aaa.entity.sell.OrderInfo"
+		resultType="com.aaa.entity.sell.OrderInfo">
+		select empno from emp where ename = #{ename}
+	</select>
+	<!-- 添加订单详情 -->
+	<insert id="addOrderDetail" parameterType="com.aaa.entity.sell.OrderDetail">
+		insert into orderdetail(
+		<include refid="orderDeatilField" />
+		)
+		values(#{orderno},#{pno},#{pname},#{pprice},#{psize},#{pnum},#{msubtotal},#{mtotal},#{state},#{punit})
+	</insert>
+	<!-- 添加订单信息 -->
+	<insert id="addOrderInfo" parameterType="com.aaa.entity.sell.OrderInfo">
+		insert into
+		orderinfo(orderno,cno,empno,mtotal,remark,paytype,dpval)
+		values(#{orderno},#{cno},#{empno},#{mtotal},#{remark},#{paytype},#{dpval})
+	</insert>
+	<!-- 更该订单产品信息 -->
+	<update id="updateOrderDetailByOrderId" parameterType="com.aaa.entity.sell.OrderDetail">
+		update
+		orderdetail set msubtotal = #{msubtotal},pno = #{pno},pprice =
+		#{pprice},pname = #{pname},psize = #{psize},pnum = #{pnum},mtotal =
+		#{mtotal} where id = #{id}
+	</update>
+	<!-- 更该订单备注信息 -->
+	<update id="updateOrderInfoByOrderId" parameterType="com.aaa.entity.sell.OrderInfo">
+		update
+		orderinfo set remark = #{remark},mtotal = #{mtotal} where orderno =
+		#{orderno}
+	</update>
+	<!-- 删除订单商品 -->
+	<delete id="deleteOrderDetailByOrderId" parameterType="com.aaa.entity.sell.OrderDetail">
+		delete
+		from orderdetail where id = #{id}
+	</delete>
+	<!-- 删除订单 -->
+	<delete id="deleteOrderDetailByOrderNo" parameterType="com.aaa.entity.sell.OrderDetail">
+		delete
+		orderdetail,orderinfo from orderdetail left join orderinfo on
+		orderdetail.orderno = orderinfo.orderno where orderinfo.orderno =
+		#{orderno}
+	</delete>
+	<!-- 查询库存数量 -->
+	<select id="selectPnumByPno" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="map">
+		select pnum from inventorygross where pno = #{pno}
+	</select>
+	<!-- 查询要退回的产品信息 -->
+	<select id="selectReturnProInfoById" parameterType="com.aaa.entity.sell.OrderDetail"
+		resultType="com.aaa.entity.sell.OrderDetail">
+		select id,orderno,pno,pname,pprice,pnum from orderdetail
+		where id = #{id}
+	</select>
+	<!-- 查询已退回的数量 -->
+	<select id="selectReturnedQuantity" resultType="map">
+		select rpnum from
+		returnorder where opid = #{opid}
+	</select>
+	<!-- 异常单保存 -->
+	<insert id="saveReturnOrder" parameterType="com.aaa.entity.sell.ReturnOrder">
+		<if test="rtype==16">
+			insert into
+			returnorder(opid,rorderno,rpno,rpname,rprice,rpnum,rsubtotal,rtype,returnreason)
+			values
+			(#{opid},#{rorderno},#{rpno},#{rpname},#{rprice},#{rpnum},#{rsubtotal},#{rtype},#{returnreason})
+		</if>
+		<if test="rtype==17">
+			insert into returnorder
+			(opid,rorderno,rpno,rpname,rprice,rpnum,rsubtotal) select
+			id,orderno,pno,pname,pprice,pnum,msubtotal from orderdetail where
+			orderno =
+			#{rorderno}
+		</if>
+	</insert>
+	<!-- 退货原因 -->
+	<update id="updateReturnReason" parameterType="map">
+		update returnorder
+		set returnreason = #{reason},rtype = #{type} where rorderno =
+		#{orderno}
+	</update>
+	<!-- 更该订单信息表订单状态为退货 -->
+	<update id="updateOrderStateByOrderNo" parameterType="map">
+		update
+		orderinfo set statess = #{state} where orderno = #{orderno}
+	</update>
+	<!-- 获取异常单数据行数 -->
+	<select id="gainReorderTotalLineNum" resultType="int"
+		parameterType="map">
+		select count(distinct rorderno) from returnorder
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<!-- 异常订单信息 -->
+	<select id="selectReorderInfo" parameterType="map" resultType="map">
+		select rorderno,rtype,DATE_FORMAT(rordertime,'%Y-%m-%d %H:%i:%s')
+		rordertime,returnreason,rstate from returnorder
+		<where>
+			<if test="(name!=null and name!='') and (value!=null and value!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+		group by rorderno order by id desc limit #{begin},#{end}
+	</select>
+	<!-- 退回订单详情列表 -->
+	<select id="selectReorderDetail" resultType="map">
+		select
+		rpno,rprice,rpname,rpnum,rsubtotal from returnorder where rorderno =
+		#{rorderno}
+	</select>
+	<!-- 根据订单编号查询尾款是否结算 -->
+	<select id="selectPaymentStateByOrderNo" resultType="map">
+		select type
+		from income where IncomeNum = #{num} and type = #{fpType}
+	</select>
+	<!-- 插入订单金额 -->
+	<insert id="insertDownPayment" parameterType="map">
+		insert into
+		income(IncomeNum,IncomeMoney,IncomeDate,type) values
+		(#{num},#{money},#{time},#{type})
+	</insert>
+	<!-- 根据订单编号查询订单总额和预付定金 -->
+	<select id="selectOrderMoneyByOrderNo" parameterType="com.aaa.entity.sell.OrderInfo"
+		resultType="com.aaa.entity.sell.OrderInfo">
+		select mtotal,dpval,statess from orderinfo where orderno =
+		#{orderno}
+	</select>
+	<!-- 更该订单支付状态 -->
+	<update id="updateOrderPayTypeByOrderNo">
+		update orderinfo set paytype = #{paytype} where
+		orderno = #{orderno}
+	</update>
+	<!-- 销量统计 -->
+	<select id="selectOrderData" parameterType="map"
+		resultType="com.aaa.entity.sell.OrderData">
+		<if test="dateState==0">
+			select pno,year(saletime) orderYear,sum(pnum) orderTotal
+			from orderdetail where saletime &gt; #{startDate} and saletime &lt;
+			#{endDate} and pno = #{pno} group by year(saletime)
+		</if>
+		<if test="dateState==1">
+			select pno,month(saletime) orderMonth,sum(pnum) orderTotal
+			from
+			orderdetail where saletime &gt; #{startDate} and saletime &lt;
+			#{endDate} and pno = #{pno} group by
+			month(saletime)
+		</if>
+		<if test="dateState==2">
+			select pno,day(saletime) orderDay,sum(pnum) orderTotal
+			from
+			orderdetail where saletime &gt; #{startDate}
+			and saletime &lt;
+			#{endDate}
+			and pno = #{pno} group by
+			day(saletime)
+		</if>
+		<if test="pno==null or pno==''">
+			select pno,day(saletime) orderDay,sum(pnum) orderTotal
+			from orderdetail where saletime &gt; #{startDate} and saletime &lt;
+			#{endDate} group by day(saletime),pno		
+		</if>
+	</select>
+</mapper>

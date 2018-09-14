@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.emp.EmpDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(empno) from emp 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectEmpDept" resultType="map" parameterType="map">
+		select e.id,e.empno,e.ename,e.sex,e.birthday,e.tell,e.address,e.hiredate,d.deptname,p.post,e.remark,e.state from emp e  left join dept d on d.deptno = e.deptno left join positions p on e.postno=p.id
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by e.id desc
+			limit #{begin},#{end}
+	</select>
+	
+	<!-- 添加员工数据 -->
+	<insert id="addEmp" parameterType="com.aaa.entity.emp.Emp">
+		insert into emp(empno,ename,sex,birthday,tell,address,hiredate,deptno,postno,remark) values(#{empno},#{ename},#{sex},#{birthday},#{tell},#{address},#{hiredate},#{deptno},#{postno},#{remark})
+	</insert>
+	
+	<!-- 查询员工信息返回值 -->
+	<select id="selectEmp" resultType="map" parameterType="int">
+		select id,empno,ename,sex,birthday,tell,address,hiredate,postno,deptno,remark from emp  where id = #{id}
+	</select>
+	
+	<!-- 修改员工信息 -->
+	<update id="updateEmp" parameterType="com.aaa.entity.emp.Emp">
+		update emp set empno=#{empno},ename=#{ename},sex=#{sex},birthday=#{birthday},tell=#{tell},address=#{address},hiredate=#{hiredate},deptno=#{deptno},postno=#{postno},remark=#{remark},state=#{state} where id=#{id} and id!='20'
+	</update>
+	
+	<!-- 查询员工编号是否存在 -->
+	<select id="selectEmpno" resultType="map">
+		select empno from emp where empno=#{empno}
+	</select>
+	
+	<delete id="deleteEmp" parameterType="com.aaa.entity.emp.Emp">
+		delete from emp where empno = #{empno}
+	</delete>
+	
+	
+	<!-- 查询下拉框部门值 -->
+	<select id="selectDeptno" resultType="com.aaa.entity.emp.Dept">
+		select deptno,deptname from dept
+	</select>
+	<!-- 根据部门编号查询部门职位  -->
+	<select id="SelectPosition" resultType="com.aaa.entity.emp.Emp">
+		select id,post from positions where deptno = #{deptno}
+	</select>
+	
+	<!-- 获取职位列表 -->
+	<select id="getPositionList" parameterType="int" resultType="map">
+		select id,deptno,post from positions where deptno=(select deptno from emp where id=#{id})
+	</select>
+</mapper>

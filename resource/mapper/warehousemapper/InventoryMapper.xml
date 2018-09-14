@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+   <mapper namespace="com.aaa.dao.warehousedao.InventoryDao">
+   <!-- 成品详情 -->
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(f.id) from fgi f  
+  		<where>
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<select id="selectAllInv" resultType="map" parameterType="map">
+		select f.id,f.pname,f.psize,f.rkdh,f.inventoryunit,f.rtime,c.cxian from fgi f left join capacity c on f.cid = c.cid   
+			<where>
+				 <if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by id desc
+				limit #{begin},#{end}
+	</select> 
+	<!-- 原料详情 -->
+	<select id="findCountByMap1" parameterType="map" resultType="int">
+  		select count(id) from matinventory 
+  		<where>
+  			warehousenum = #{warehousenum}
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+	
+	<select id="selectAllRmfd" resultType="map" parameterType="map">
+		select id,warehousenum,rkdh,materialnum,materialtype,materialname,inventoryunit,addtime from matinventory 
+			<where>
+				 warehousenum = #{warehousenum} 
+				 <if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if> 
+			</where>
+		order by id desc
+			limit #{begin},#{end}
+	</select> 
+	<!-- 废品详情 -->
+		<select id="findCountByMap2" parameterType="map" resultType="int">
+  		select count(id) from scrapinventory
+  		<where>
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<select id="selectAllDow" resultType="map" parameterType="map">
+		select s.id,s.rkdh,p.pname,p.psize,s.inventoryunit,s.audittime from scrapinventory s left join proinfo p on s.goodstype=p.id
+			<where>
+				 <if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if> 
+			</where>
+		order by id desc
+			limit #{begin},#{end}
+	</select> 
+	<select id="findCountByMapthere" parameterType="map" resultType="int">
+		select count(id) from arod
+			<where>
+				<if test="(name!=null and name!='') and (value!=null and value!='')">
+					and ${name} like concat('%',count(#{value},''))
+				</if>
+			</where>
+	</select>
+	<select id="selectArod" resultType="map" parameterType="map">
+		select a.id,a.ckdh,a.orderno,p.pname,p.psize,a.pnum,a.rtime,a.ckname from arod a left join proinfo p on a.pno = p.pno
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value}.'%'))
+			</if>
+		</where> 
+			order by id desc
+				limit #{begin},#{end}
+	</select>
+	<!-- 成品库存总量 -->
+	<select id="findCountByMapFore" parameterType="map" resultType="int">
+		select count(id) from inventorygross
+			<where>
+				<if test="(name!=null and name!='') and (value!=null and value!='')">
+					and ${name} like concat('%',count(#{value},''))
+				</if>
+			</where>
+	</select>
+	<select id="selectGross" resultType="map" parameterType="map">
+		select i.id,p.pname,i.psize,i.pnum from inventorygross i left join proinfo p on i.pno = p.pno
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value}.'%'))
+			</if>
+		</where> 
+			order by id desc
+				limit #{begin},#{end}
+	</select>
+	<!-- 原料库存总量 -->
+	<select id="findCountByMapFive" parameterType="map" resultType="int">
+		select count(id) from yuanliao
+			<where>
+				<if test="(name!=null and name!='') and (value!=null and value!='')">
+					and ${name} like concat('%',count(#{value},''))
+				</if>
+			</where>
+	</select>
+	<select id="selectYlkc" resultType="map" parameterType="map">
+		select id,name,type,weight from yuanliao
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value}.'%'))
+			</if>
+		</where> 
+			order by id desc
+				limit #{begin},#{end}
+	</select>
+	<!-- 原料库存总量 -->
+	<select id="findCountByMapSex" parameterType="map" resultType="int">
+		select count(zid) from scrapinventoryzong
+			<where>
+				<if test="(name!=null and name!='') and (value!=null and value!='')">
+					and ${name} like concat('%',count(#{value},''))
+				</if>
+			</where>
+	</select>
+	<select id="selFpzl" resultType="map" parameterType="map">
+		select zid,zong from scrapinventoryzong
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and ${name} like concat('%',concat(#{value}.'%'))
+			</if>
+		</where> 
+			order by zid desc
+				limit #{begin},#{end}
+	</select>
+	</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.manger.PlanDao">
+	<select id="findCountByplan" resultType="int" parameterType="map">
+		select count(p.pid) from plan p left join state s on  s.id=p.pzh
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+			and	${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectplan" resultType="map" parameterType="map">
+		select p.pid,p.pnumber,p.dnumber,p.person,p.ptime,p.pnum,p.pchang,p.pbegin,p.pend,s.states,p.pyi,p.pzhi from plan p LEFT JOIN state s ON s.id=p.pzh 
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and	${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 	 order by p.pid desc 
+			limit #{begin},#{end}
+			
+	</select>
+	
+	<insert id="addplan" parameterType="com.aaa.entity.manger.Plan">
+		insert into plan(pnumber,dnumber,person,pchang,pbegin,pend)values(#{pnumber},#{dnumber},#{person},#{pchang},#{pbegin},#{pend})
+	</insert>
+	
+	<delete id="delete" parameterType="long">
+		delete from plan where pid=#{pid}
+	</delete>
+	
+	<select id="selectbyplan" parameterType="com.aaa.entity.manger.Plan" resultType="com.aaa.entity.manger.Plan">
+		select p.pid,p.pnumber,p.dnumber,p.person,p.ptime,p.pchang,p.pbegin,p.pend,s.states,p.pyi,p.pzhi from plan p LEFT JOIN state s ON s.id=p.pzh where pid=#{pid}
+	</select>
+	
+	<update id="updateplan" parameterType="com.aaa.entity.manger.Plan">
+		update plan set pnumber=#{pnumber},dnumber=#{dnumber},person=#{person},pchang=#{pchang},pbegin=#{pbegin},pend=#{pend} where pid=#{pid}
+	</update>
+	
+	<update id="update" parameterType="com.aaa.entity.manger.Plan">
+		update plan set pzh=25,begintime=#{begintime} where pid=#{pid}
+	</update>
+	
+	<update id="toupdate" parameterType="com.aaa.entity.manger.Plan">
+		update plan set endtime=#{endtime} where pid=#{pid}
+	</update>
+	
+	<select id="selectorder" resultType="map" parameterType="map">
+		select id,orderno,pname,psize,pnum from orderdetail where orderno=#{dnumber} and state=12
+	</select>
+	
+	<select id="select" parameterType="com.aaa.entity.manger.Plan" resultType="com.aaa.entity.manger.Plan">
+		select pid,pnumber,dnumber,begintime,endtime,TIMESTAMPDIFF(day,begintime,endtime)zong from plan where pid=#{pid}
+	 </select>
+	 
+	 <update id="tooupdate" parameterType="com.aaa.entity.manger.Plan">
+	 	update plan set pzh=26,endtime=#{endtime} where dnumber=#{dnumber}
+	 </update>
+	 
+	 <select id="selectma" parameterType="com.aaa.entity.manger.Plan" resultType="com.aaa.entity.manger.Plan">
+	 		SELECT psize,pnum from orderdetail where state=12 and orderno=#{dnumber}
+	 </select>
+	 
+	 <select id="selectpl" parameterType="com.aaa.entity.manger.Plan" resultType="double">
+	 		select SUM(p.inventoryunit) FROM stockmanager p LEFT JOIN inventorygross o on p.goodstype=o.id WHERE dnumber=#{dnumber} and o.psize=#{psize} GROUP BY o.psize
+	 </select>
+	 
+	<select id="selecttime" parameterType="com.aaa.entity.manger.Plan" resultType="com.aaa.entity.manger.Plan">
+		SELECT  TIMESTAMPDIFF(day,#{begintime},#{endtime}) pnum from plan where dnumber=#{dnumber}
+	</select>
+	
+	<select id="selectshi" parameterType="com.aaa.entity.manger.Plan" resultType="com.aaa.entity.manger.Plan">
+		select begintime,endtime from plan where dnumber=#{dnumber}
+	</select>
+	
+	<update id="date" parameterType="com.aaa.entity.manger.Plan">
+		update plan set pnum=#{pnum} where dnumber=#{dnumber}
+	</update>
+</mapper>

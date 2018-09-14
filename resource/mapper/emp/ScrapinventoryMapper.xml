@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.emp.ScrapinventoryDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(id) from scrapinventory 
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectScrapinventory" resultType="map" parameterType="map">
+		select id,rkdh,goodstype,inventoryunit,audittime from scrapinventory
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by id desc
+			limit #{begin},#{end}
+	</select>
+	<!-- 库存剩余量 -->
+	<select id="listScrapinventoryzong" resultType="map">
+	 	select zid,zong from scrapinventoryzong
+	</select>
+	<!-- 查询仓库废铁原料 -->
+	<select id="selectYuanLiao" resultType="map">
+		select weight from yuanliao where id='4'
+	</select>
+	<!-- 修改废品库存总量 -->
+	<update id="updateScrapinventoryzong" parameterType="com.aaa.entity.emp.Scrapinventory">
+		update scrapinventoryzong set zong=#{zong} where zid=#{zid}
+	</update>
+	<!-- 添加出库记录 -->
+	<insert id="addScrapinventory" parameterType="com.aaa.entity.emp.Scrapinventory">
+		insert into scrapinventoryout(zhongliang,sname) values (#{zhongliang},#{sname})
+	</insert>
+	<!-- 添加原料库废铁重量 -->
+	<update id="editYuanLiao" parameterType="com.aaa.entity.emp.Scrapinventory">
+		update yuanliao set weight=#{weight} where id=#{id}
+	</update>
+	
+	
+	<select id="findCountByMaps" resultType="int" parameterType="map">
+		select count(id) from scrapinventoryout
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectScrapinventorys" resultType="map" parameterType="map">
+		select id,zhongliang,date,sname from scrapinventoryout
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by id desc
+			limit #{begin},#{end}
+	</select>
+</mapper>

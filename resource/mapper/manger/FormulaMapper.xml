@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.manger.FormulaDao">
+  	<select id="findCountByplan" resultType="int" parameterType="map">
+		select count(pid) from formula
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectformula" resultType="map" parameterType="map">
+		select pid,ptype,pnumber,pname,pgui,pshu,pdan from formula
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 order by pid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<delete id="delete"  parameterType="com.aaa.entity.manger.Formula">
+		delete from formula where pid=#{pid}
+	</delete>
+	
+	<insert id="addformula"  parameterType="com.aaa.entity.manger.Formula">
+		insert into formula(ptype,pnumber,pname,pgui,pshu)values(#{ptype},#{pnumber},#{pname},#{pgui},#{pshu})
+	</insert>
+	
+	<select id="selectmangers" parameterType="com.aaa.entity.manger.Formula" resultType="com.aaa.entity.manger.Formula">
+		select pid,ptype,pnumber,pname,pgui,pshu,pdan from formula where pid=#{pid}
+	</select>
+	
+	<update id="updatemanger" parameterType="com.aaa.entity.manger.Formula"> 
+		update formula set ptype=#{ptype},pnumber=#{pnumber},pname=#{pname},pgui=#{pgui},pshu=#{pshu},pdan=#{pdan} where pid=#{pid}
+	</update>
+  </mapper>

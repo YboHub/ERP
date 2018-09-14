@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+  <mapper namespace="com.aaa.dao.warehousedao.ProBackInFoodDao">
+  	<!-- 成品退回入库 -->
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from market
+  		<where>
+  			rstate in(2,7,8)
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<select id="selProBack" resultType="map" parameterType="map">
+		select m.id,m.rorderno,m.rpnum,m.reason,p.psize,m.rpname,m.rstate,m.rordertime,s.states from market m LEFT JOIN state s on s.id = m.rstate left join proinfo p on p.pno = m.rpno
+			<where>
+				rstate in(2,7,8) 
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and	${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		order by m.id desc
+				limit #{begin},#{end}
+	</select>
+	<!-- 查询库存总量 -->
+	<select id="selWareAll" resultType="com.aaa.entity.warehouseentity.Cpck">
+		SELECT m.rorderno orderno,p.pno,p.pnum kz,m.rpnum zl,(p.pnum+m.rpnum) sy from inventorygross p LEFT JOIN market m on p.pno=m.rpno WHERE m.id=#{id}
+	</select>
+	<!-- 退回成品入库 -->
+	<select id="selectMarketById" resultType="map"  parameterType="int">
+		select m.id,m.rorderno,m.rpno,psize,m.rpname,m.rpnum FROM market m LEFT JOIN proinfo p on m.rpno = p.pno where m.id=#{id}
+	</select>
+	<!-- 查询库存总量 -->
+	<select id="selectGross" resultType="double" parameterType="map">
+		select pnum from inventorygross where pno=#{rpno}
+	</select>
+	<update id="addGross" parameterType="map">
+		update inventorygross set pnum = #{oldUnit} + #{rpnum} where pno=#{rpno}
+	</update>
+	<!-- 生成入库单号 -->
+	<select id="selectRKDH" resultType="String">
+		select rkdh from fgi where id=(select max(id) from fgi)
+	</select>
+	<!-- 将出库记录插入fgi表中 -->
+	<insert id="insertStock"  parameterType="com.aaa.entity.warehouseentity.Cpck">
+		insert into fgi(rname,rkdh,psize,pname,rtime,inventoryunit) values(#{rname},#{rkdh},#{psize},#{rpname},#{rtime},#{rpnum})
+	</insert>
+	<!-- 入库成功改变状态 -->
+	<update id="updateMarket" parameterType="int">
+		update  market  set rstate ='7' where id=#{id}
+	</update>
+  </mapper>

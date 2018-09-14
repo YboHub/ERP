@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+  <mapper namespace="com.aaa.dao.warehousedao.FoodDao">
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(f.id) from warehouse f
+  		<where> 1=1
+  			<if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if>
+  		</where>
+  	</select>
+  	<select id="selectAllFood" resultType="map" parameterType="map">
+		select a.* from(select m.* from(select id,warehousenum,warehousename,warehousetype,warehousekeeper,detail from warehouse 
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		) m order by m.id desc) a
+			<where>
+				a.id &gt;#{begin} and a.id &lt;#{end}
+			</where>
+	</select>
+	
+	 <insert id="addFood" parameterType="com.aaa.entity.warehouseentity.Food">
+		insert into warehouse(id,warehousenum,warehousename,warehousetype,warehousekeeper) values(#{id},#{warehousenum},#{warehousename},#{warehousetype},#{warehousekeeper})
+	</insert>
+	<delete id="deleteFood" parameterType="com.aaa.entity.warehouseentity.Food">
+		delete from warehouse where id=#{id}
+	</delete>
+	
+	<select id="selectFood" resultType="com.aaa.entity.warehouseentity.Food">
+		select id,warehousenum,warehousename,warehousetype,warehousekeeper from warehouse  where id = #{id}
+	</select>
+	<select id="selectFoodId" resultType="map">
+		select id,warehousenum from warehouse where warehousenum=#{warehousenum}
+	</select>
+	
+	<update id="updateFood" parameterType="com.aaa.entity.warehouseentity.Food">
+  		update warehouse set warehousenum = #{warehousenum},warehousename = #{warehousename},warehousetype = #{warehousetype},warehousekeeper = #{warehousekeeper} where id = #{id}
+  	</update> 
+  </mapper>

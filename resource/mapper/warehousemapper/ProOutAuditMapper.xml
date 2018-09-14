@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 命名空间为dao类的路径 -->
+  <mapper namespace="com.aaa.dao.warehousedao.ProOutAuditDao">
+  	<select id="findCountByMap" parameterType="map" resultType="int">
+  		select count(id) from orderinfo
+  		<where>
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and ${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	
+  	</select>
+	
+	<!-- 成品出库审核 -->
+	<select id="selOutAuditDetails" resultType="map" parameterType="map">
+		select m.* from(select  o.id,o.orderno,d.pname,d.psize,o.statess,t.states from orderinfo o left join state t on o.statess = t.id left join orderdetail d on o.orderno = d.orderno group by o.orderno) m
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and	${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by m.id desc                
+				limit #{begin},#{end}
+	</select>
+	<select id="proOutAudit" resultType="com.aaa.entity.sell.OrderInfo">
+		select id,orderno,cno,ordertime,empno,mtotal from orderinfo  where id = #{id}
+	</select>
+	<update id="savepassProOut" parameterType="com.aaa.entity.sell.OrderInfo">
+  		update orderinfo set statess =10,proaudittime=#{proaudittime},auditman=#{auditman},auditremark=#{auditremark} where id = #{id}
+  	</update>
+	<update id="cprkbh" parameterType="com.aaa.entity.sell.OrderInfo">
+  		update orderinfo set statess =1,proaudittime=#{proaudittime},auditman=#{auditman},auditremark=#{auditremark} where id = #{id}
+  	</update>
+  	<!-- 成品出库审核 -->
+  	<select id="findCountByMapOne" parameterType="map" resultType="int">
+  		select count(n.id) from (select * from orderinfo where statess = 1 or statess = 2 or statess = 9 or statess = 10) n
+  		<where>
+  				1=1
+  				<if test="beginTime!=null and beginTime!=''">
+					and n.proaudittime &gt; #{beginTime}
+				</if>
+				<if test="endTime!=null and endTime!=''">
+					and n.proaudittime &lt; #{endTime}
+				</if>
+  			 <if test="(name!=null and name!='') and (value!=null and value!='')">
+  				and n.${name} like concat('%',concat(#{value},'%'))
+  			</if> 
+  		</where>
+  	</select>
+  	<!-- 成品出库审核记录 -->
+  	<select id="selOutAuditRecord" resultType="map" parameterType="map">
+  select n.* from(select m.* from(select o.id,d.pname,o.proaudittime,o.orderno,s.states,o.statess from orderinfo o LEFT JOIN orderdetail d on d.orderno = o.orderno left join state s on s.id=o.statess GROUP BY o.orderno)m where  m.statess = 1 or m.statess = 2 or m.statess = 9 or m.statess = 10) n
+			<where>1=1
+				 	<if test="beginTime!=null and beginTime!=''">
+						and n.proaudittime &gt; #{beginTime}
+					</if>                                                                                                                                                                                                                                                                                                                                                                                                                               
+					<if test="endTime!=null and endTime!=''">
+						and n.proaudittime &lt; #{endTime}
+					</if>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+				and	n.${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+			order by n.id desc
+				limit #{begin},#{end}
+	</select>
+	<select id="selProDatails" resultType="com.aaa.entity.warehouseentity.Cpck">
+		select o.orderno,o.psize,o.pname,o.pnum,o.mtotal,i.proaudittime,i.auditman,i.auditremark from orderdetail o LEFT JOIN orderinfo i on o.orderno = i.orderno where o.orderno = #{orderno}
+	</select>
+  </mapper>

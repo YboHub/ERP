@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.aaa.dao.manger.MaterialDao">
+  	<select id="findCountBymaterial" resultType="int" parameterType="map">
+		select count(mid) from material
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectmaterial" resultType="map" parameterType="map">
+		select mid,mnumber,pnumber,pnum,mzhuang from material
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		 	order by mid desc
+			limit #{begin},#{end}
+	</select>
+	
+	<update id="deletematerial" parameterType="com.aaa.entity.manger.Material">
+		update material set state=2 where mid=#{mid}
+	</update>
+	
+	<insert id="addmanger" parameterType="com.aaa.entity.manger.Material">
+		insert into material(mnumber,pnumber,mperson)values(#{mnumber},#{pnumber},#{mperson})
+	</insert>
+	
+	<select id="selectmaterialss" resultType="map" parameterType="com.aaa.entity.manger.Material">
+	select f.pname name,round(((sum(p.pnum))*f.pshu)*1.05,0) zong from orderdetail p LEFT JOIN formula f on f.ptype=p.psize LEFT JOIN material m on m.mnumber=p.orderno where mid=#{mid} and p.state=12 GROUP BY f.pname
+	</select>
+  </mapper>

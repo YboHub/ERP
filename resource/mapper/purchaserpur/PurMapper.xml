@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aaa.dao.purchase.PurDao">
+	<select id="findCountByMap" resultType="int" parameterType="map">
+		select count(orderid) from procurement
+		<where>
+			<if test="(value!=null and value!='') and (name!=null and name!='')">
+				 and ${name} like concat('%',concat(#{value},'%'))
+			</if>
+		</where>
+	</select>
+	<select id="selectPur" resultType="map" parameterType="map">
+	select m.* from (select p.id id,p.orderid,p.caozuoname,p.apptime,sum(u.money) money,p.states,p.reason from procurement p LEFT JOIN purorder u on u.orderid=p.orderid GROUP BY p.orderid) m
+			<where>
+				<if test="(value!=null and value!='') and (name!=null and name!='')">
+					and ${name} like concat('%',concat(#{value},'%'))
+				</if>
+			</where>
+		  order by m.id desc 
+			limit #{begin},#{end}
+	</select>
+	
+	<update id="edit" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states=4 where id=#{id}
+	</update>
+	<!-- 级联下拉框 -->
+	<select id="getBMName" resultType="map">
+		select distinct goodsname from offer
+	</select>
+	<select id="getSpecificate" parameterType="String" resultType="map">
+		select goodstype from offer where goodsname=#{goodsname}
+	</select>
+	<select id="agetSpecificate" resultType="map" parameterType="map">
+		select company from offer 
+		<if test="(goodsname!=null and goodsname!='') and (goodstype!=null and goodstype!='')">
+			where goodsname = #{goodsname} and goodstype=#{goodstype}
+		</if>
+	</select>
+	<!-- 第四个下拉框 -->
+	 <select id="aagetSpecificate" parameterType="map" resultType="map">
+		select price from offer
+			<if test="(goodsname!=null and goodsname!='') and (goodstype!=null and goodstype!='') and(company!=null and company!='')">
+				where goodsname = #{goodsname} and goodstype=#{goodstype} and company=#{company}
+			</if>
+	</select> 
+	
+	<insert id="addPurOff" parameterType="com.aaa.entity.purchase.PurOrder">
+		insert into purorder(orderid,goodsname,types,company,price,weights,money,reason,states) values
+		
+		(#{orderid},#{goodsname},#{types},#{company},#{price},#{weights},#{money},#{reason},#{states})
+	</insert>
+	<insert id="addP" parameterType="com.aaa.entity.apauditor.Procurement">
+		insert into procurement(orderid,reason,caozuoname) values(#{orderid},#{reason},#{caozuoname})
+	</insert>
+	
+	<select id="selectOrder" resultType="com.aaa.entity.purchase.PurOrder">
+		select id,orderid,goodsname,types,company,weights,price,money from purorder where orderid=#{orderid}
+	</select>
+	<!-- 退货查询 -->
+	<select id="selectOrderReturn" resultType="com.aaa.entity.purchase.PurOrder">
+		select id,orderid,goodsname,types,company,weights,price,money,reason from purorder where orderid=#{orderid} and states=14
+	</select>
+	<select id="selectOrderReturnOne" resultType="com.aaa.entity.purchase.PurOrder" parameterType="com.aaa.entity.purchase.PurOrder">
+		select id,orderid,goodsname,types,company,weights,price,money,reason from purorder where id=#{id}
+	</select>
+	<insert id="insert" parameterType="com.aaa.entity.purchase.PurOrder">
+		insert into materialreturn(orderid,goodsname,types,company,price,weights,money,reason,returnname) values
+		(#{orderid},#{goodsname},#{types},#{company},#{price},#{weights},#{weights},#{reason},#{name})
+	</insert>
+	
+	<select id="selectOrderOne" resultType="com.aaa.entity.purchase.PurOrder">
+		select id,orderid,goodsname,types,company,weights,price,money from purorder where id=#{id}
+	</select>
+	
+	<delete id="deleteOne" parameterType="long">
+		delete from procurement where id=#{id}
+	</delete>
+	<delete id="delete" parameterType="String"> 
+		delete from procurement where id=#{id}
+	</delete>
+	<delete id="deleteTwo" parameterType="String">
+		delete from purorder where id=#{id}
+	</delete>
+	<!-- 购买需求量查询 -->
+	<select id="selectProduction" resultType="map">
+		select f.pname pname,ROUND(((sum(p.pnum))*f.pshu),2) shu, c.weight weightOne,round(((((sum(p.pnum))*f.pshu)-c.weight)*1.05),0) shuone FROM orderdetail p LEFT JOIN formula f ON  p.psize=f.ptype LEFT JOIN yuanliao c on f.pname=c.name where p.state=12 GROUP BY f.pname 
+	</select>
+	<select id="purductionList"  parameterType="int" resultType="String">
+		select orderid from procurement where id=(SELECT max(id) FROM procurement)
+	</select>
+	<select id="selectPlanNum" resultType="map">
+		select dnumber,ptime,pnum FROM plan where pzh=1
+	</select>
+	<select id="updatedetalisONe" parameterType="com.aaa.entity.purchase.PurOrder" resultType="com.aaa.entity.purchase.PurOrder">
+		select id,goodsname,types,company,price,weights,money from purorder where id=#{id}
+	</select>
+	<update id="updateDetalis" parameterType="com.aaa.entity.purchase.PurOrder">
+		update purorder set weights=#{weights},money=#{money} where id=#{id}
+	</update>
+	<!-- 把采购的各种材料状态改成已购买等待质检 -->
+	<update id="detailToBuyOne" parameterType="com.aaa.entity.purchase.PurOrder">
+		update purorder set states=20 where orderid=#{orderid}
+	</update>
+	<!-- 把采购单状态改成已购买 -->
+	<update id="detailToBuy" parameterType="com.aaa.entity.apauditor.Procurement">
+		update procurement set states=20 where orderid=#{orderid}
+	</update>
+</mapper>
